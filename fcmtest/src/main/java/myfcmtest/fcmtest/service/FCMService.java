@@ -1,14 +1,24 @@
-package myfcmtest.fcmtest.firebase;
+package myfcmtest.fcmtest.service;
 
 
-import com.google.firebase.messaging.*;
+import java.time.Duration;
+import java.util.Map;
+import java.util.concurrent.ExecutionException;
+
 import myfcmtest.fcmtest.model.PushNotificationRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import java.time.Duration;
-import java.util.Map;
-import java.util.concurrent.ExecutionException;
+
+import com.google.firebase.messaging.AndroidConfig;
+import com.google.firebase.messaging.AndroidNotification;
+import com.google.firebase.messaging.ApnsConfig;
+import com.google.firebase.messaging.Aps;
+import com.google.firebase.messaging.FirebaseMessaging;
+import com.google.firebase.messaging.Message;
+import com.google.firebase.messaging.Notification;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 @Service
 public class FCMService {
@@ -18,8 +28,10 @@ public class FCMService {
     public void sendMessage(Map<String, String> data, PushNotificationRequest request)
             throws InterruptedException, ExecutionException {
         Message message = getPreconfiguredMessageWithData(data, request);
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        String jsonOutput = gson.toJson(message);
         String response = sendAndGetResponse(message);
-        logger.info("Sent message with data. Topic: " + request.getTopic() + ", " + response);
+        logger.info("Sent message with data. Topic: " + request.getTopic() + ", " + response+ " msg "+jsonOutput);
     }
 
     public void sendMessageWithoutData(PushNotificationRequest request)
@@ -32,8 +44,10 @@ public class FCMService {
     public void sendMessageToToken(PushNotificationRequest request)
             throws InterruptedException, ExecutionException {
         Message message = getPreconfiguredMessageToToken(request);
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        String jsonOutput = gson.toJson(message);
         String response = sendAndGetResponse(message);
-        logger.info("Sent message to token. Device token: " + request.getToken() + ", " + response);
+        logger.info("Sent message to token. Device token: " + request.getToken() + ", " + response+ " msg "+jsonOutput);
     }
 
     private String sendAndGetResponse(Message message) throws InterruptedException, ExecutionException {
@@ -64,7 +78,7 @@ public class FCMService {
     }
 
     private Message getPreconfiguredMessageWithData(Map<String, String> data, PushNotificationRequest request) {
-        return getPreconfiguredMessageBuilder(request).putAllData(data).setTopic(request.getTopic())
+        return getPreconfiguredMessageBuilder(request).putAllData(data).setToken(request.getToken())
                 .build();
     }
 
@@ -75,5 +89,4 @@ public class FCMService {
                 .setApnsConfig(apnsConfig).setAndroidConfig(androidConfig).setNotification(
                         new Notification(request.getTitle(), request.getMessage()));
     }
-
 }

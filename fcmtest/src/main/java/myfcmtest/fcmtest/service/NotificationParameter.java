@@ -1,4 +1,4 @@
-package myfcmtest.fcmtest.firebase;
+package myfcmtest.fcmtest.service;
 
 public enum NotificationParameter {
 
